@@ -4,7 +4,7 @@ import queue
 import serial
 import threading
 
-ADDRESS = 0x46  # Engine ECU
+ADDRESS = 0x1  # Engine ECU
 BIT_DURATION = 0.20  # 200 ms = 5 baud
 SOURCE = 0xF1
 
@@ -49,25 +49,13 @@ class OBD:
         #ser.flushInput()
 
     def read_loop(self, debug=False):
-        echo = -1
         while True:
             a = self.ser.read(64)
             if len(a) > 0:
                 for c in a:
-                    if c == echo:
-                        # skip echo
-                        echo = -1
-                        continue
-
                     self.q.put(c)
                     if debug:
                         print(f"> 0x{c:02X}")
-                    if self.init_complete:
-                        answer = (~c) & 0xFF
-                        print(f"\t\t\t 0x{c:02X} => 0x{answer:02X}")
-                        time.sleep(0.005)
-                        self.ser.write(bytes([answer]))
-                        echo = answer
             else:
                 time.sleep(0.01)
 
@@ -85,6 +73,8 @@ class OBD:
             else:
                 break
         return None
+    def write_byte(self, data_byte):
+        self.ser.write(bytes([data_byte]))
 
     def wait_byte(self, byte, timeout=1):
         t = 0
@@ -98,7 +88,7 @@ class OBD:
             if t > timeout:
                 return False
 
-    def send_bytes(self, data_bytes, echo=True):
+    def send_bytes(self, data_bytes):
         for b in data_bytes:
             self.ser.write(bytes([b]))
             # echo
@@ -142,53 +132,62 @@ class OBD:
 
     def send_id_request(self):
 
-        for sub in range(90, 0xa0):
-            b = bytearray([0x3, ADDRESS, SOURCE, 0x1a, sub ])
-            b.append(self.cs_xor(b))
+        for block_count in range(2,20):
+            b = bytearray([0x3, block_count, 0x09, 0x03])
+            for i in b:
+                self.write_byte(i)
+                echo = self.read_byte()
 
-            self.ser.write(b)
-            if self.debug:
-                self.print_hex_bytes(b, "request")
-            buf = []
-            for i in range(1,255):
-                v = self.read_byte(wait=False)
-                if v is None:
-                    break
-                buf.append(v)
-
-            print(f"received {len(buf)} bytes")
-
-            self.print_hex_bytes(buf, "hex")
-            self.print_ascii_bytes(buf, "ascii")
 
 
 
     def initialize_ecu(self):
+        complete = False
+
+        while not complete:
+            self.send_5baud_7O1(ADDRESS)
 
         # read start byte
-        self.wait_byte(0x55, timeout=10)
+            self.wait_byte(0x55, timeout=10)
 
-        while True:
-            key1 = self.read_byte()
-            key2 = self.read_byte()
-            print(f"key2 {key2:02x}")
+            while True:
+                key1 = self.read_byte(wait=False)
+                key2 = self.read_byte(wait=False)
+                print(f"key2 {key2:02x}")
 
-            answer = (~key2) & 0xFF
-            self.ser.write(bytes([answer]))
-            print(f"answer 0x{answer:02X}")
-            v = self.read_byte(wait=False)
-            if v == answer:
-                break
-            else:
-                continue
+                #time.sleep(0.1)
+                answer = (~key2) & 0xFF
+                answer = 0xff - key2
+                print(f"answer 0x{answer:02X}")
+                self.ser.write(bytes([answer]))
+
+                v = self.read_byte(wait=False)
+                if v == answer:
+                    complete = True
+                    break
+                elif v == 0x55:
+                    continue
+                else:
+                    # timeout
+                    break
 
         self.init_complete = True
 
-        # self.send_id_request()
-
-        l = []
+        BLOCK_END = 0x03
+        buf = []
         while True:
-           time.sleep(1)
+            ecu = self.read_byte()
+            buf.append(ecu)
+            if ecu == BLOCK_END:
+                break
+            answer = (~ecu) & 0xFF
+            self.write_byte(answer)
+            echo = self.read_byte()
+            # discard echo
+
+        self.print_hex_bytes(buf, "hex")
+        self.print_ascii_bytes(buf, "ascii")
+
 
 
 def main():
@@ -197,9 +196,11 @@ def main():
         obd = OBD()
 
 
-        obd.send_5baud_7O1(ADDRESS)
-
         obd.initialize_ecu()
+        print("init complete")
+
+        obd.send_id_request()
+
 
 
         # rx_thread.join(timeout=2)
