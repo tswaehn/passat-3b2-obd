@@ -6,6 +6,14 @@ There are excellent sources for reading on how to handle the protocol:
 
 I am using the FTDI version. As there a slight differences in baudrate like 9600baud vs 10400baud, the FTDI is a good choice to program the exact needed baudrate.
 
+## the idea
+
+```
+CAR <===> OBD (KW1281) <===> USB <===> RPI CM4 (server) <===> Websocket <===> Website
+```
+* RPI CM4 (server) ... see [/c++](/c++)
+
+
 ## OBD Adapter (KKL USB OBD Diagnose Interface) for VAG VW Audi Seat Skoda (older models)
 
 I am using this adapter for my passat 1999 3b2 (B5):
@@ -51,9 +59,13 @@ seller on ebay: [link](https://www.ebay.de/sch/i.html?_ssn=kds-tec&store_name=kd
 
 The python script works out of the box for 5baud init and also reading manufacturer information, group values, ...
 
-Actually I used it for testing and fiddling around. For performance reason C++ was the much better suited solution. This I transferred the knowledge from python to C++.
+Actually I used it for testing and fiddling around. For performance reason C++ was the much better suited solution. Thus I transferred the knowledge from python to C++.
 
 ## C++
+
+This is a C++ websocket server that connects to the OBD interface of the car and receives requests via websocket, while the received data from the car is sent back via websocket.
+
+I see this as backend for my website, that displays the status of my passat.
 
 requirements
 * libftdi-dev 

@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "FtdiUart.h"
+#include "lib/FtdiUart.h"
 
 int main() {
     try {

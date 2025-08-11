@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(passat_3b2_obd CXX)
+project(passat_3b2_obd_server CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -9,8 +9,8 @@ pkg_check_modules(LIBFTDI1 REQUIRED libftdi)
 pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
 
 add_executable(${PROJECT_NAME}
-        main.cpp
-        FtdiUart.cpp
+        passat_3b2_obd_server.cpp
+        lib/FtdiUart.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
