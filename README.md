@@ -59,4 +59,16 @@ requirements
 * libftdi-dev 
 * libusb-1.0-0-dev
 
+building in linux
+
+```
+cd c++
+mkdir build
+cd build
+
+cmake ..
+
+cmake --build . -- -j 3
+
+```
 
