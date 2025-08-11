@@ -63,15 +63,18 @@ The python script works out of the box for 5baud init and also reading manufactu
 
 Actually I used it for testing and fiddling around. For performance reason C++ was the much better suited solution. Thus I transferred the knowledge from python to C++.
 
-## C++
+## C++ (linux)
 
 This is a C++ websocket server that connects to the OBD interface of the car and receives requests via websocket, while the received data from the car is sent back via websocket.
 
 I see this as backend for my website, that displays the status of my passat.
 
 requirements
+* gcc
+* cmake
 * libftdi-dev 
 * libusb-1.0-0-dev
+
 
 building in linux
 
