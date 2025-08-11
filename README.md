@@ -1,17 +1,19 @@
 
-# OBD KW 1281 protocol
-
-There are excellent sources for reading on how to handle the protocol:
-* https://www.blafusel.de/obd/obd2_kw1281.html
-
-I am using the FTDI version. As there a slight differences in baudrate like 9600baud vs 10400baud, the FTDI is a good choice to program the exact needed baudrate.
-
 ## the idea
 
 ```
 CAR <===> OBD (KW1281) <===> USB <===> RPI CM4 (server) <===> Websocket <===> Website
 ```
 * RPI CM4 (server) ... see [/c++](/c++)
+
+
+
+## OBD KW 1281 protocol
+
+There are excellent sources for reading on how to handle the protocol:
+* https://www.blafusel.de/obd/obd2_kw1281.html
+
+I am using the FTDI version. As there a slight differences in baudrate like 9600baud vs 10400baud, the FTDI is a good choice to program the exact needed baudrate.
 
 
 ## OBD Adapter (KKL USB OBD Diagnose Interface) for VAG VW Audi Seat Skoda (older models)
